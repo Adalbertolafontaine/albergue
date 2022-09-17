@@ -55,9 +55,9 @@ info.update = function (props) {
       ? "<b>" +
         props.TOPONIMIA +
         "</b><br />" +
-        props.density +
-        " people / mi<sup>2</sup>"
-      : "Hover over a state");
+        CantidadAlbergue(props.PROV) +
+        "albergues"
+      : "Coloca el cursor sobre una provincia");
 };
 
 info.addTo(map);
@@ -143,16 +143,17 @@ legend.onAdd = function (map) {
 };
 
 SLprovincia.addEventListener("change",e=>{
-    CantidadAlbergue()
+    document.getElementById('TXTalbergue').innerHTML = CantidadAlbergue(SLprovincia.value)
 })
 
-const CantidadAlbergue = ()=>{
-    let v = SLprovincia.value
+const CantidadAlbergue = (valor)=>{
+   
 
-    let p = alberges.filter(x=>x.prov === v || v=== '')
+    let p = alberges.filter(x=>x.prov === valor || valor === '00')
 
-    document.getElementById('TXTalbergue').innerHTML = p.length
+    return p.length
 }
 
+
+document.getElementById('TXTalbergue').innerHTML = CantidadAlbergue( '00')
 legend.addTo(map);
-CantidadAlbergue()
