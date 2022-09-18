@@ -104,7 +104,7 @@ function getColor(y) {
   };
 
   let v =validarLocalidad(x, y)
-  console.log(x, y)
+ 
   if (v) {
     return "";
   } else {
@@ -244,7 +244,7 @@ const LLenadoSl = (datos, seleccion, desactivar) => {
 
 const llenado_cuadro = (prov, mun, bp) => {
   let p = CantidadAlbergue({ prov, mun, bp });
-  console.log(p);
+
   for (const iterator of renglones) {
     document.getElementById(`TXT${iterator}`).innerHTML = p[iterator];
   }
