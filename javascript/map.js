@@ -12,6 +12,18 @@ var map = L.map("map", {
 
 let renglones = Object.keys(datos);
 
+let validarLocalidad = (original, comparacion) => {
+  let v = false;
+  if (
+    (original.prov === comparacion.prov || comparacion.prov === "00") &&
+    (original.mun === comparacion.mun || comparacion.mun === "00") &&
+    (original.bp === comparacion.bp || comparacion.bp === "00")
+  ) {
+    v = true;
+  }
+  return v;
+};
+
 let alertas = {
   "01": "roja",
   "08": "roja",
@@ -50,43 +62,53 @@ info.onAdd = function (map) {
   return this._div;
 };
 
-info.update = function (props) {        
-    let prov = "00"
-    let mun = "00"
-    let bp = "00"
-    let cantidad
-    if(props){
-        prov = props['prov'].toString() || "00"
-        mun = props['mun'] || "00"
-        bp = props['bp'] || "00"
-     cantidad =   CantidadAlbergue({prov,mun,bp})
-    
-    }
-   
+info.update = function (props) {
+  let prov = "00";
+  let mun = "00";
+  let bp = "00";
+  let cantidad;
+  if (props) {
+    prov = props["prov"].toString() || "00";
+    mun = props["mun"] || "00";
+    bp = props["bp"] || "00";
+    cantidad = CantidadAlbergue({ prov, mun, bp });
+  }
+
   this._div.innerHTML =
     "<h4>Información localidad</h4>" +
     (props
       ? "<b>" +
         props.TOPONIMIA +
         "</b><br />" +
-        cantidad['alberges'] +
-        " albergues"+
+        cantidad["alberges"] +
+        " albergues" +
         "<br />" +
-        cantidad['beneficiario'] +
-        " beneficiario"
-        +"<br />" +
-        cantidad['centros'] +
+        cantidad["beneficiario"] +
+        " beneficiario" +
+        "<br />" +
+        cantidad["centros"] +
         " centros de salud"
-
       : "Coloca el cursor sobre una provincia");
 };
 
 info.addTo(map);
 
 // get color depending on population density value
-function getColor(d) {
+function getColor(y) {
+  let x = {
+    prov: SLprovincia.value,
+    mun: Slmunicipio.value,
+    bp: Slparaje.value,
+  };
 
-  return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
+  let v =validarLocalidad(x, y)
+  console.log(x, y)
+  if (v) {
+    return "";
+  } else {
+    let d = (y.prov)? alertas[y.prov]:y;
+    return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
+  }
 }
 
 function style(feature) {
@@ -96,7 +118,7 @@ function style(feature) {
     color: "white",
     dashArray: "3",
     fillOpacity: 0.7,
-    fillColor: getColor(alertas[feature.properties.prov]),
+    fillColor: getColor(feature.properties),
   };
 }
 
@@ -172,32 +194,22 @@ SLprovincia.addEventListener("change", (e) => {
   LLenadoSl([], "Slparaje");
 });
 
-
-let validarLocalidad = (x,y)=>{
-let v = false
-    if ( (x.prov === y.prov || y.prov === "00") &&
-    (x.mun === y.mun || y.mun === "00") &&
-    (x.bp === y.bp || y.bp === "00")) {
-     v = true   
-    } 
-return  v 
-}
 const CantidadAlbergue = (y) => {
   let p = {};
 
   renglones.map((r) => {
-    let numero =  datos[r].filter(
-      (x) =>
-       validarLocalidad(x,y)
-    ).reduce( (previousValue, currentValue) => previousValue + currentValue.total,
-    0,);
-
+    let numero = datos[r]
+      .filter((x) => validarLocalidad(x, y))
+      .reduce(
+        (previousValue, currentValue) => previousValue + currentValue.total,
+        0
+      );
 
     p[r] = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(numero);
-  })
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numero);
+  });
 
   return p;
 };
@@ -229,10 +241,9 @@ const LLenadoSl = (datos, seleccion, desactivar) => {
 };
 
 const llenado_cuadro = (prov, mun, bp) => {
-  let p = CantidadAlbergue({prov, mun, bp});
-  console.log(p)
+  let p = CantidadAlbergue({ prov, mun, bp });
+  console.log(p);
   for (const iterator of renglones) {
-   
     document.getElementById(`TXT${iterator}`).innerHTML = p[iterator];
   }
 };
