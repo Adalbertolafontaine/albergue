@@ -1,6 +1,6 @@
-const SLprovincia = document.getElementById('SLprovincia')
-
-
+const SLprovincia = document.getElementById("SLprovincia");
+const Slmunicipio = document.getElementById("Slmunicipio");
+const Slparaje = document.getElementById("Slparaje");
 var map = L.map("map", {
   zoomControl: true,
   maxZoom: 28,
@@ -10,28 +10,30 @@ var map = L.map("map", {
   [20.003638911962263, -68.07286629199285],
 ]);
 
+let renglones = Object.keys(datos);
+
 let alertas = {
   "01": "roja",
   "08": "roja",
   "09": "roja",
-  '11': "roja",
-  '12': "roja",
-  '14': "roja",
-  '18': "roja",
-  '20': "roja",
-  '21': "roja",
-  '23': "roja",
-  '29': "roja",
-  '30': "roja",
-  '32': "roja",
-  '02': "amarilla",
-  '04': "amarilla",
-  '06': "amarilla",
-  '13': "amarilla",
-  '17': "amarilla",
-  '24': "amarilla",
-  '28': "amarilla",
-  '31': "amarilla",
+  11: "roja",
+  12: "roja",
+  14: "roja",
+  18: "roja",
+  20: "roja",
+  21: "roja",
+  23: "roja",
+  29: "roja",
+  30: "roja",
+  32: "roja",
+  "02": "amarilla",
+  "04": "amarilla",
+  "06": "amarilla",
+  13: "amarilla",
+  17: "amarilla",
+  24: "amarilla",
+  28: "amarilla",
+  31: "amarilla",
 };
 var tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -49,14 +51,32 @@ info.onAdd = function (map) {
 };
 
 info.update = function (props) {
+    
+    
+    let prov = "00"
+    let mun = "00"
+    let bp = "00"
+    let cantidad
+    if(props){
+        prov = props['prov'].toString() || "00"
+        mun = props['mun'] || "00"
+        bp = props['bp'] || "00"
+     cantidad =   CantidadAlbergue(prov,mun,bp)
+     console.log(cantidad)
+    }
+   
   this._div.innerHTML =
-    "<h4>Cantidad de Albergues Activos</h4>" +
+    "<h4>Información localidad</h4>" +
     (props
       ? "<b>" +
         props.TOPONIMIA +
         "</b><br />" +
-        CantidadAlbergue(props.PROV) +
-        "albergues"
+        cantidad['alberges'] +
+        " albergues"+
+        "</b><br />" +
+        cantidad['beneficiario'] +
+        " beneficiario"
+
       : "Coloca el cursor sobre una provincia");
 };
 
@@ -64,22 +84,17 @@ info.addTo(map);
 
 // get color depending on population density value
 function getColor(d) {
-  return d === 'roja'
-    ? "#e02416"   
-    : d === 'amarilla'
-    ? "#FFF23F"
-    : "#3FE671";
+  return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
 }
 
 function style(feature) {
-   
   return {
     weight: 2,
     opacity: 1,
     color: "white",
     dashArray: "3",
     fillOpacity: 0.7,
-    fillColor: getColor(alertas[feature.properties.PROV]),
+    fillColor: getColor(alertas[feature.properties.prov]),
   };
 }
 
@@ -125,35 +140,92 @@ geojson = L.geoJson(provincias, {
   onEachFeature: onEachFeature,
 }).addTo(map);
 
-map.attributionControl.addAttribution("Datos suministrados por &copy;//////</a>");
+map.attributionControl.addAttribution(
+  "Datos suministrados por &copy;//////</a>"
+);
 
 var legend = L.control({ position: "bottomright" });
 
 legend.onAdd = function (map) {
   var div = L.DomUtil.create("div", "info legend");
-  var grades = ['roja','amarilla','verde'];
-  var labels = grades.map(x=>{
-    return `<i style="background: ${getColor(x)}"></i> Alerta ${x} `
-  })
-  
+  var grades = ["roja", "amarilla", "verde"];
+  var labels = grades.map((x) => {
+    return `<i style="background: ${getColor(x)}"></i> Alerta ${x} `;
+  });
 
- 
   div.innerHTML = labels.join("<br>");
   return div;
 };
 
-SLprovincia.addEventListener("change",e=>{
-    document.getElementById('TXTalbergue').innerHTML = CantidadAlbergue(SLprovincia.value)
-})
+SLprovincia.addEventListener("change", (e) => {
+  llenado_cuadro(SLprovincia.value, "00", "00");
 
-const CantidadAlbergue = (valor)=>{
+  let m = municipio
+    .filter((x) => x.prov === SLprovincia.value)
+    .map((x) => {
+      return { id: x.mun, descripcion: x.nombre };
+    });
+
+  LLenadoSl(m, "Slmunicipio");
+  LLenadoSl([], "Slparaje");
+});
+
+const CantidadAlbergue = (prov, mun, bp) => {
+  let p = {};
+
+  renglones.map((r) => {
+    let numero =  datos[r].filter(
+      (x) =>
+        (x.prov === prov || prov === "00") &&
+        (x.mun === mun || mun === "00") &&
+        (x.bp === bp || bp === "00")
+    ).reduce( (previousValue, currentValue) => previousValue + currentValue.total,
+    0,);
+
+
+    p[r] = new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(numero);
+  })
+
+  return p;
+};
+
+const LLenadoSl = (datos, seleccion, desactivar) => {
+  let sl = document.getElementById(seleccion);
+  for (let i = sl.options.length; i > 0; i--) {
+    sl.options.remove(1);
+  }
+
+  sl.disabled = true;
+  if (datos.length > 0) {
+    datos.forEach((element) => {
+      var opcion;
+      if (typeof element === "string") {
+        opcion = new Option(element, element);
+      } else {
+        opcion = new Option(element.descripcion, element.id);
+      }
+      sl.options.add(opcion);
+    });
+
+    sl.disabled = false;
+  }
+
+  if (!desactivar) {
+    sl.disabled = false;
+  }
+};
+
+const llenado_cuadro = (prov, mun, bp) => {
+  let p = CantidadAlbergue(prov, mun, bp);
+  console.log(p)
+  for (const iterator of renglones) {
    
+    document.getElementById(`TXT${iterator}`).innerHTML = p[iterator];
+  }
+};
 
-    let p = alberges.filter(x=>x.prov === valor || valor === '00')
-
-    return p.length
-}
-
-
-document.getElementById('TXTalbergue').innerHTML = CantidadAlbergue( '00')
+llenado_cuadro("00", "00", "00");
 legend.addTo(map);
