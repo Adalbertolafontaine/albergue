@@ -40,12 +40,14 @@ let alertas = {
   32: "roja",
   "02": "amarilla",
   "04": "amarilla",
-  "06": "amarilla",
+  "06": "roja",
   13: "amarilla",
   17: "amarilla",
   24: "amarilla",
   28: "amarilla",
   31: "amarilla",
+  25:"amarilla",
+  19:"amarilla",
 };
 var tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
