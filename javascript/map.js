@@ -50,9 +50,7 @@ info.onAdd = function (map) {
   return this._div;
 };
 
-info.update = function (props) {
-    
-    
+info.update = function (props) {        
     let prov = "00"
     let mun = "00"
     let bp = "00"
@@ -61,8 +59,8 @@ info.update = function (props) {
         prov = props['prov'].toString() || "00"
         mun = props['mun'] || "00"
         bp = props['bp'] || "00"
-     cantidad =   CantidadAlbergue(prov,mun,bp)
-     console.log(cantidad)
+     cantidad =   CantidadAlbergue({prov,mun,bp})
+    
     }
    
   this._div.innerHTML =
@@ -73,9 +71,12 @@ info.update = function (props) {
         "</b><br />" +
         cantidad['alberges'] +
         " albergues"+
-        "</b><br />" +
+        "<br />" +
         cantidad['beneficiario'] +
         " beneficiario"
+        +"<br />" +
+        cantidad['centros'] +
+        " centros de salud"
 
       : "Coloca el cursor sobre una provincia");
 };
@@ -84,6 +85,7 @@ info.addTo(map);
 
 // get color depending on population density value
 function getColor(d) {
+
   return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
 }
 
@@ -170,15 +172,23 @@ SLprovincia.addEventListener("change", (e) => {
   LLenadoSl([], "Slparaje");
 });
 
-const CantidadAlbergue = (prov, mun, bp) => {
+
+let validarLocalidad = (x,y)=>{
+let v = false
+    if ( (x.prov === y.prov || y.prov === "00") &&
+    (x.mun === y.mun || y.mun === "00") &&
+    (x.bp === y.bp || y.bp === "00")) {
+     v = true   
+    } 
+return  v 
+}
+const CantidadAlbergue = (y) => {
   let p = {};
 
   renglones.map((r) => {
     let numero =  datos[r].filter(
       (x) =>
-        (x.prov === prov || prov === "00") &&
-        (x.mun === mun || mun === "00") &&
-        (x.bp === bp || bp === "00")
+       validarLocalidad(x,y)
     ).reduce( (previousValue, currentValue) => previousValue + currentValue.total,
     0,);
 
@@ -219,7 +229,7 @@ const LLenadoSl = (datos, seleccion, desactivar) => {
 };
 
 const llenado_cuadro = (prov, mun, bp) => {
-  let p = CantidadAlbergue(prov, mun, bp);
+  let p = CantidadAlbergue({prov, mun, bp});
   console.log(p)
   for (const iterator of renglones) {
    
