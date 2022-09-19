@@ -17,7 +17,6 @@ var map = L.map("map", {
 
 let renglones = Object.keys(datos);
 
-
 let validarLocalidad = (original, comparacion) => {
   let v = false;
   if (
@@ -32,28 +31,37 @@ let validarLocalidad = (original, comparacion) => {
 
 let alertas = {
   "01": "roja",
+  "02": "amarilla",
+  "03": "amarilla",
+  "04": "amarilla",
+  "05": "amarilla",
+  "06": "roja",
+  "07": "amarilla",
   "08": "roja",
   "09": "roja",
+  10: "amarilla",
   11: "roja",
   12: "roja",
+  13: "roja",
   14: "roja",
+  15: "amarilla",
+  16: "amarilla",
+  17: "amarilla",
   18: "roja",
+  19: "roja",
   20: "roja",
   21: "roja",
+  22: "amarilla",
   23: "roja",
+  24: "roja",
+  25: "amarilla",
+  26: "amarilla",
+  27: "amarilla",
+  28: "roja",
   29: "roja",
   30: "roja",
   32: "roja",
-  "02": "amarilla",
-  "04": "amarilla",
-  "06": "roja",
-  13: "amarilla",
-  17: "amarilla",
-  24: "amarilla",
-  28: "amarilla",
   31: "amarilla",
-  25: "amarilla",
-  19: "amarilla",
 };
 
 var tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -266,7 +274,7 @@ const CantidadAlbergue = (y) => {
         0
       );
     } else {*/
-      numero = numerop.length;
+    numero = numerop.length;
     //}
 
     p[r] = new Intl.NumberFormat("en-US", {
