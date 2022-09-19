@@ -17,6 +17,7 @@ var map = L.map("map", {
 
 let renglones = Object.keys(datos);
 
+
 let validarLocalidad = (original, comparacion) => {
   let v = false;
   if (
@@ -259,14 +260,14 @@ const CantidadAlbergue = (y) => {
   renglones.map((r) => {
     let numerop = datos[r].filter((x) => validarLocalidad(x, y));
     let numero = 0;
-    if (r === "activos") {
+    /*if (r === "activos") {
       numero = numerop.reduce(
         (previousValue, currentValue) => previousValue + currentValue.cantidad,
         0
       );
-    } else {
+    } else {*/
       numero = numerop.length;
-    }
+    //}
 
     p[r] = new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 0,
