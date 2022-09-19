@@ -118289,3 +118289,5 @@ const municipio = [
   { prov: "32", mun: "07", nombre: "PEDRO BRAND", enlace: "3207" },
   { prov: "07", mun: "01", nombre: "COMENDADOR", enlace: "0701" },
 ];
+
+export {datos,municipio}

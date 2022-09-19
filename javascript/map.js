@@ -1,3 +1,7 @@
+import { datos, municipio } from "./albergues.js";
+import provincias from "./provincias.js";
+import municipios from "./municipios.js";
+
 const SLprovincia = document.getElementById("SLprovincia");
 const Slmunicipio = document.getElementById("Slmunicipio");
 const Slparaje = document.getElementById("Slparaje");
@@ -46,8 +50,8 @@ let alertas = {
   24: "amarilla",
   28: "amarilla",
   31: "amarilla",
-  25:"amarilla",
-  19:"amarilla",
+  25: "amarilla",
+  19: "amarilla",
 };
 var tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -80,7 +84,7 @@ info.update = function (props) {
     "<h4>Información localidad</h4>" +
     (props
       ? "<b>" +
-        props.TOPONIMIA +
+        props.toponimia +
         "</b><br />" +
         cantidad["alberges"] +
         " albergues" +
@@ -103,12 +107,12 @@ function getColor(y) {
     bp: Slparaje.value,
   };
 
-  let v =validarLocalidad(x, y)
- 
+  let v = validarLocalidad(x, y);
+
   if (v) {
     return "";
   } else {
-    let d = (y.prov)? alertas[y.prov]:y;
+    let d = y.prov ? alertas[y.prov] : y;
     return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
   }
 }
@@ -160,10 +164,30 @@ function onEachFeature(feature, layer) {
   });
 }
 
+let mapa = {
+  type: "FeatureCollection",
+  name: "División Politica",
+  crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  features: [],
+};
+
+const filtro = (geoJsonFeature) => {
+  console.log(geoJsonFeature["properties"]["prov"], SLprovincia.value);
+  return geoJsonFeature["properties"]["prov"] === SLprovincia.value;
+};
+
+mapa.features = provincias.features;
+
 /* global statesData */
-geojson = L.geoJson(provincias, {
+geojson = L.geoJson(mapa, {
   style: style,
   onEachFeature: onEachFeature,
+}).addTo(map);
+
+let municipio_geo = L.geoJson(municipios, {
+  style: style,
+  onEachFeature: onEachFeature,
+  filter: filtro,
 }).addTo(map);
 
 map.attributionControl.addAttribution(
@@ -185,6 +209,30 @@ legend.onAdd = function (map) {
 
 SLprovincia.addEventListener("change", (e) => {
   llenado_cuadro(SLprovincia.value, "00", "00");
+
+  map.removeLayer(geojson)
+  map.removeLayer(municipio_geo);
+  
+  if (SLprovincia.value !== "00") {
+    let borde = bordes_provincias[SLprovincia.value];
+    let corner1 = L.latLng(borde["max"][1], borde["max"][0]);
+    let corner2 = L.latLng(borde["min"][1], borde["min"][0]);
+    let bounds = L.latLngBounds(corner1, corner2);
+    //  mapa.features = municipios.features.filter(x=>{ x.prov =SLprovincia.value})
+
+    municipio_geo = L.geoJson(municipios, {
+      style: style,
+      onEachFeature: onEachFeature,
+      filter: filtro,
+    }).addTo(map);
+
+    let p = L.control.layers;
+    console.log(p);
+
+    map.fitBounds([bounds]);
+  }else{
+    map.addLayer(geojson)
+  }
 
   let m = municipio
     .filter((x) => x.prov === SLprovincia.value)
