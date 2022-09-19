@@ -1,6 +1,7 @@
 import { datos, municipio } from "./albergues.js";
 import provincias from "./provincias.js";
 import municipios from "./municipios.js";
+import { bordes_provincias } from "./listado.js";
 
 const SLprovincia = document.getElementById("SLprovincia");
 const Slmunicipio = document.getElementById("Slmunicipio");
@@ -53,6 +54,7 @@ let alertas = {
   25: "amarilla",
   19: "amarilla",
 };
+
 var tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution:
@@ -171,8 +173,13 @@ let mapa = {
   features: [],
 };
 
+let casosactivos = datos.activos.map((c) => {
+  return L.marker([c["Y"], c["x"]]).bindPopup(
+    `${c["nombre"]} <br> Ocupación ${c.cantidad || 0}`
+  );
+});
+
 const filtro = (geoJsonFeature) => {
-  console.log(geoJsonFeature["properties"]["prov"], SLprovincia.value);
   return geoJsonFeature["properties"]["prov"] === SLprovincia.value;
 };
 
@@ -189,6 +196,8 @@ let municipio_geo = L.geoJson(municipios, {
   onEachFeature: onEachFeature,
   filter: filtro,
 }).addTo(map);
+
+let casos_activos = L.layerGroup(casosactivos).addTo(map);
 
 map.attributionControl.addAttribution(
   "Datos suministrados por &copy;//////</a>"
@@ -210,9 +219,9 @@ legend.onAdd = function (map) {
 SLprovincia.addEventListener("change", (e) => {
   llenado_cuadro(SLprovincia.value, "00", "00");
 
-  map.removeLayer(geojson)
+  map.removeLayer(geojson);
   map.removeLayer(municipio_geo);
-  
+
   if (SLprovincia.value !== "00") {
     let borde = bordes_provincias[SLprovincia.value];
     let corner1 = L.latLng(borde["max"][1], borde["max"][0]);
@@ -230,8 +239,8 @@ SLprovincia.addEventListener("change", (e) => {
     console.log(p);
 
     map.fitBounds([bounds]);
-  }else{
-    map.addLayer(geojson)
+  } else {
+    map.addLayer(geojson);
   }
 
   let m = municipio
@@ -248,12 +257,16 @@ const CantidadAlbergue = (y) => {
   let p = {};
 
   renglones.map((r) => {
-    let numero = datos[r]
-      .filter((x) => validarLocalidad(x, y))
-      .reduce(
-        (previousValue, currentValue) => previousValue + currentValue.total,
+    let numerop = datos[r].filter((x) => validarLocalidad(x, y));
+    let numero = 0;
+    if (r === "activos") {
+      numero = numerop.reduce(
+        (previousValue, currentValue) => previousValue + currentValue.cantidad,
         0
       );
+    } else {
+      numero = numerop.length;
+    }
 
     p[r] = new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 0,
