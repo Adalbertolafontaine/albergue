@@ -1,6 +1,6 @@
 import { datos, municipio } from "./albergues.js";
 import provincias from "./provincias.js";
-import municipios from "./municipios.js";
+//import municipios from "./municipios.js";
 import { bordes_provincias } from "./listado.js";
 
 const SLprovincia = document.getElementById("SLprovincia");
@@ -17,6 +17,41 @@ var map = L.map("map", {
 
 let renglones = Object.keys(datos);
 
+async function Llamar(dirrecion, datos, tipo, formulario) {
+  let data = {};
+  const myHeaders = new Headers();
+  //myHeaders.append("authorization", `Bearer ${localStorage.token}`);
+  myHeaders.append("Content-Type", "application/json");
+
+  if (datos) {
+    if (formulario) {
+      data = {
+        method: tipo ? tipo : "POST",
+        body: datos, // data can be `string` or {object}!
+      };
+    } else {
+      data = {
+        method: tipo ? tipo : "POST",
+        body: JSON.stringify(datos), // data can be `string` or {object}!
+        //headers: myHeaders ,
+      };
+    }
+  }
+  //data["credentials"] = "include";
+  //data["headers"] = myHeaders;
+  data["mode"] = "cors";
+  return await fetch(dirrecion, data)
+    .then((res) => res.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((err) => {
+      //console.log(err);
+
+      return [];
+    });
+}
+
 let validarLocalidad = (original, comparacion) => {
   let v = false;
   if (
@@ -29,45 +64,9 @@ let validarLocalidad = (original, comparacion) => {
   return v;
 };
 
-let alertasdb = {
-  status: "200",
-  data: [
-    { prov: "01", alerta: "amarilla" },
-    { prov: "02", alerta: "verde" },
-    { prov: "03", alerta: "verde" },
-    { prov: "04", alerta: "verde" },
-    { prov: "05", alerta: "verde" },
-    { prov: "06", alerta: "amarilla" },
-    { prov: "07", alerta: "verde" },
-    { prov: "08", alerta: "roja" },
-    { prov: "09", alerta: "roja" },
-    { prov: "10", alerta: "verde" },
-    { prov: "11", alerta: "roja" },
-    { prov: "12", alerta: "roja" },
-    { prov: "13", alerta: "amarilla" },
-    { prov: "14", alerta: "amarilla" },
-    { prov: "15", alerta: "verde" },
-    { prov: "16", alerta: "verde" },
-    { prov: "17", alerta: "verde" },
-    { prov: "18", alerta: "amarilla" },
-    { prov: "19", alerta: "amarilla" },
-    { prov: "20", alerta: "roja" },
-    { prov: "21", alerta: "amarilla" },
-    { prov: "22", alerta: "verde" },
-    { prov: "23", alerta: "roja" },
-    { prov: "24", alerta: "amarilla" },
-    { prov: "25", alerta: "amarilla" },
-    { prov: "26", alerta: "verde" },
-    { prov: "27", alerta: "amarilla" },
-    { prov: "28", alerta: "amarilla" },
-    { prov: "29", alerta: "amarilla" },
-    { prov: "30", alerta: "roja" },
-    { prov: "31", alerta: "amarilla" },
-    { prov: "32", alerta: "amarilla" },
-  ],
-  mensage: "",
-};
+let alertasdb = await Llamar("https://sdo.do/sibe/alertas");
 let alertas = {};
+console.log(alertasdb);
 alertasdb["data"].map((x) => {
   alertas[x["prov"]] = x["alerta"];
 });
@@ -131,7 +130,6 @@ function getColor(y) {
   if (v) {
     return "";
   } else {
-    
     let d = y.prov ? alertas[y.prov] : y;
     return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
   }
@@ -201,19 +199,20 @@ const filtro = (geoJsonFeature) => {
   return geoJsonFeature["properties"]["prov"] === SLprovincia.value;
 };
 
-mapa.features = provincias.features;
-
-/* global statesData */
-geojson = L.geoJson(mapa, {
-  style: style,
-  onEachFeature: onEachFeature,
-}).addTo(map);
-
-let municipio_geo = L.geoJson(municipios, {
+let municipio_geo = L.geoJson(mapa, {
   style: style,
   onEachFeature: onEachFeature,
   filter: filtro,
 }).addTo(map);
+
+
+/* global statesData */
+geojson = L.geoJson(provincias, {
+  style: style,
+  onEachFeature: onEachFeature,
+}).addTo(map);
+
+
 
 let casos_activos = L.layerGroup(casosactivos).addTo(map);
 
@@ -234,7 +233,7 @@ legend.onAdd = function (map) {
   return div;
 };
 
-SLprovincia.addEventListener("change", (e) => {
+SLprovincia.addEventListener("change", async (e) => {
   llenado_cuadro(SLprovincia.value, "00", "00");
 
   map.removeLayer(geojson);
@@ -245,16 +244,20 @@ SLprovincia.addEventListener("change", (e) => {
     let corner1 = L.latLng(borde["max"][1], borde["max"][0]);
     let corner2 = L.latLng(borde["min"][1], borde["min"][0]);
     let bounds = L.latLngBounds(corner1, corner2);
-    //  mapa.features = municipios.features.filter(x=>{ x.prov =SLprovincia.value})
-
-    municipio_geo = L.geoJson(municipios, {
+    let p = await Llamar(`https://sdo.do/sibe/municipio?prov=${SLprovincia.value}`)
+    
+    mapa.features = p['data']
+    
+     console.log(mapa)
+     municipio_geo = L.geoJson(mapa, {
       style: style,
       onEachFeature: onEachFeature,
       filter: filtro,
     }).addTo(map);
 
-    let p = L.control.layers;
-    console.log(p);
+
+
+    //let p = L.control.layers;
 
     map.fitBounds([bounds]);
   } else {
