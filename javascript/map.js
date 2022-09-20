@@ -29,7 +29,48 @@ let validarLocalidad = (original, comparacion) => {
   return v;
 };
 
-let alertas = await fetch("https://sdo.do/sibe/alertas").catch((e) => []);
+let alertasdb = {
+  status: "200",
+  data: [
+    { prov: "01", alerta: "roja" },
+    { prov: "02", alerta: "amarilla" },
+    { prov: "03", alerta: "amarilla" },
+    { prov: "04", alerta: "amarilla" },
+    { prov: "05", alerta: "amarilla" },
+    { prov: "06", alerta: "roja" },
+    { prov: "07", alerta: "amarilla" },
+    { prov: "08", alerta: "roja" },
+    { prov: "09", alerta: "roja" },
+    { prov: "10", alerta: "amarilla" },
+    { prov: "11", alerta: "roja" },
+    { prov: "12", alerta: "roja" },
+    { prov: "13", alerta: "roja" },
+    { prov: "14", alerta: "roja" },
+    { prov: "15", alerta: "amarilla" },
+    { prov: "16", alerta: "amarilla" },
+    { prov: "17", alerta: "amarilla" },
+    { prov: "18", alerta: "roja" },
+    { prov: "19", alerta: "roja" },
+    { prov: "20", alerta: "roja" },
+    { prov: "21", alerta: "roja" },
+    { prov: "22", alerta: "amarilla" },
+    { prov: "23", alerta: "roja" },
+    { prov: "24", alerta: "roja" },
+    { prov: "25", alerta: "amarilla" },
+    { prov: "26", alerta: "amarilla" },
+    { prov: "27", alerta: "amarilla" },
+    { prov: "28", alerta: "roja" },
+    { prov: "29", alerta: "roja" },
+    { prov: "30", alerta: "roja" },
+    { prov: "31", alerta: "amarilla" },
+    { prov: "32", alerta: "roja" },
+  ],
+  mensage: "",
+};
+let alertas = {};
+alertasdb["data"].map((x) => {
+  alertas[x["prov"]] = x["alerta"];
+});
 
 var tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -90,10 +131,7 @@ function getColor(y) {
   if (v) {
     return "";
   } else {
-    let a = {};
-    alertas.map((x) => {
-      a[x["prov"]] = x["alerta"];
-    });
+    
     let d = y.prov ? alertas[y.prov] : y;
     return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
   }
