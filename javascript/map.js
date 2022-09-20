@@ -29,40 +29,7 @@ let validarLocalidad = (original, comparacion) => {
   return v;
 };
 
-let alertas = {
-  "01": "roja",
-  "02": "amarilla",
-  "03": "amarilla",
-  "04": "amarilla",
-  "05": "amarilla",
-  "06": "roja",
-  "07": "amarilla",
-  "08": "roja",
-  "09": "roja",
-  10: "amarilla",
-  11: "roja",
-  12: "roja",
-  13: "roja",
-  14: "roja",
-  15: "amarilla",
-  16: "amarilla",
-  17: "amarilla",
-  18: "roja",
-  19: "roja",
-  20: "roja",
-  21: "roja",
-  22: "amarilla",
-  23: "roja",
-  24: "roja",
-  25: "amarilla",
-  26: "amarilla",
-  27: "amarilla",
-  28: "roja",
-  29: "roja",
-  30: "roja",
-  32: "roja",
-  31: "amarilla",
-};
+let alertas = await fetch("https://sdo.do/sibe/alertas").catch((e) => []);
 
 var tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -123,6 +90,10 @@ function getColor(y) {
   if (v) {
     return "";
   } else {
+    let a = {};
+    alertas.map((x) => {
+      a[x["prov"]] = x["alerta"];
+    });
     let d = y.prov ? alertas[y.prov] : y;
     return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
   }
