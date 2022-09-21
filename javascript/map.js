@@ -129,7 +129,7 @@ function getColor(y) {
     return "";
   } else {
     let d = y.prov ? alertas[y.prov] : y;
-    return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" : "#3FE671";
+    return d === "roja" ? "#e02416" : d === "amarilla" ? "#FFF23F" :d=== 'verde'? "#3FE671":'';
   }
 }
 
