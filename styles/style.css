@@ -37,3 +37,14 @@ main, aside{
   margin-right: 8px;
   opacity: 0.7;
 }
+
+
+.azul{
+  color: blue;
+  font-weight: bold;
+}
+
+.rojo{
+  color: red;
+  font-weight: bold;
+}
