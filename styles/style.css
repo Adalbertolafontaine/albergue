@@ -4,10 +4,13 @@
 }
 
 #map { 
-  height: 90%;
+  height: 600px;
   min-height: 500px;
 }
 
+.mapas{
+  height: 500px;
+}
 main, aside{
     height: 100vh;
     background-color: #edf0f5;
